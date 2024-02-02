@@ -1,8 +1,8 @@
 """Added user and roles models
 
-Revision ID: 82d872844844
+Revision ID: ce0e4183cdcb
 Revises: 
-Create Date: 2024-02-02 22:18:41.102114
+Create Date: 2024-02-03 00:09:45.706271
 
 """
 from typing import Sequence, Union
@@ -14,9 +14,8 @@ from sqlalchemy import insert
 from src.models.auth import RoleORM
 from migrations.data_for_insert import ROLES
 
-
 # revision identifiers, used by Alembic.
-revision: str = '82d872844844'
+revision: str = 'ce0e4183cdcb'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -36,7 +35,9 @@ def upgrade() -> None:
     sa.Column('email', sa.String(), nullable=False),
     sa.Column('role_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['role_id'], ['roles.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('email'),
+    sa.UniqueConstraint('username')
     )
     # ### end Alembic commands ###
     bind = op.get_bind()

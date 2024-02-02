@@ -23,3 +23,7 @@ class AuthRepositoryInterface(abc.ABC):
     @abc.abstractmethod
     async def delete_obj(self, obj_id: int):
         ...
+
+    @abc.abstractmethod
+    async def get_user_by_username(self, username: str):
+        ...
