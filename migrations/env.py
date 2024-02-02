@@ -14,7 +14,6 @@ from src.models.auth import UserORM, RoleORM
 # access to the values within the .ini file in use.
 config = context.config
 async_url = Database_utils().get_async_url()
-print(async_url)
 config.set_main_option("sqlalchemy.url", async_url)
 
 

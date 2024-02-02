@@ -1,0 +1,30 @@
+git:
+    git init
+    git remote add origin https://<token>@github.com/<github_username>/<github_repository>.git
+    git remote set-url origin https://<token>@github.com/<github_username>/<github_repository>.git -- чтобы изменить url
+    git config --global user.name <github username>
+    git config --global user.email <github email>
+    git add *
+    git commit -m '<комментарий>'
+    git branch -- посмотреть на какой сейчас ветке
+    git branch <название новой ветки> -- создать новую ветку
+    git checkout <название ветки> -- переключиться на ветку
+    git push -u origin
+
+alembic:
+    alembic init -t async <название новой папки для миграции(обычно migrations или alembic)>
+        В файле env.py:
+            async_url = <Функция, которая возвращает ссылку на url базы данных>
+            config.set_main_option("sqlalchemy.url", async_url)
+
+
+    alembic revision --autogenerate -m "<комментарий>" -- создать миграцию
+    alembic upgrade head -- миграция в БД
+
+.env:
+    Конфигурация БД:
+        POSTGRES_DB=<название базы данных>
+        POSTGRES_USER=<имя пользователя>
+        POSTGRES_HOST=<хост БД, если разворачивать в контейнере, то хост=имя контейнера(см .env и docker-compose.yml), если БД на компе, то хост=localhost>
+        PGPORT= <порт БД(по дефолту 5432). PGPORT, а не POSTGRES_PORT, тк эта переменная окружения нужная для развертывания контейнера postgres>
+        POSTGRES_PASSWORD= <пароль от БД>
