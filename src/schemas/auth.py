@@ -21,6 +21,14 @@ class OutputRoleSchema(InputRoleSchema):
     id: int
 
 
+class PatchUserSchema(BaseSchema):
+    username: str | None = None
+    password_hash: str | None = None
+    email: str | None = None
+    role_id: int | None = 1
+    refresh_token: str | None = None
+
+
 class RegisterUserSchema(BaseSchema):
     username: str
     email: str

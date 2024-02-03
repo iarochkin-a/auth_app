@@ -1,7 +1,7 @@
 from sqlalchemy.exc import NoResultFound, IntegrityError
 from fastapi import HTTPException
 from src.repository.interfaces.auth import AuthRepositoryInterface
-from src.schemas.auth import InputUserSchema, OutputUserSchema, RegisterUserSchema, SingInUserSchema
+from src.schemas.auth import InputUserSchema, OutputUserSchema, RegisterUserSchema, SingInUserSchema, PatchUserSchema
 from src.schemas.token import UserTokenSchema
 from src.tools.database import Database_tools
 from src.tools.hasher import Hasher
@@ -81,6 +81,29 @@ class AuthService:
             raise HTTPException(
                 status_code=500,
                 detail=f'Database error'
+            )
+
+    async def update_part_of_user_model(self, user_id: int, patch_user_schema: PatchUserSchema):
+        try:
+            main_user_schema = await self.get_user(user_id)
+            new_user_schema: InputUserSchema = await Database_tools.convert_patch_user_schema(patch_user_schema, main_user_schema)
+            print(new_user_schema.__dict__)
+            await self.auth_repository.update_obj(user_id, new_user_schema)
+        except NoResultFound:
+            raise HTTPException(
+                status_code=400,
+                detail=f'User with id {user_id} not found.'
+            )
+        except IntegrityError as ex:
+            if 'username' in ex.args[0]:
+                ex.detail = f'User with username {patch_user_schema.username} already exist.'
+            elif 'email' in ex.args[0]:
+                ex.detail = f'User with email {patch_user_schema.email} already exist.'
+            elif 'role_id' in ex.args[0]:
+                ex.detail = f'Incorrect role id: {patch_user_schema.role_id}.'
+            raise HTTPException(
+                status_code=400,
+                detail=f'{ex.detail}'
             )
 
     async def delete_user(self, user_id: int):

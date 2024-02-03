@@ -50,3 +50,7 @@ class JWT_tools:
             'access_token': access_token.access_token,
             'refresh_token': refresh_token.refresh_token
         })
+
+    @classmethod
+    async def verify_token(cls, user_tokens: UserTokenSchema):
+        pass
