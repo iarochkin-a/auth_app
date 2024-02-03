@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 
 from src.service.auth import AuthService
 from src.schemas.auth import OutputUserSchema, InputUserSchema, RegisterUserSchema, SingInUserSchema
+from src.schemas.token import UserTokenSchema
 from src.router.dependencies import get_auth_repository
 from src.repository.auth import AuthRepository
 
@@ -45,13 +46,15 @@ async def delete_user_from_db(user_id: int,
     await AuthService(auth_repository).delete_user(user_id)
 
 
-@auth_router.post('/register')
+@auth_router.post('/register', response_model= UserTokenSchema)
 async def register_new_user(register_user_schema: RegisterUserSchema,
                             auth_repository: AuthRepository = Depends(get_auth_repository)):
-    await AuthService(auth_repository).create_new_user(register_user_schema)
+    user_tokens: UserTokenSchema = await AuthService(auth_repository).create_new_user(register_user_schema)
+    return user_tokens
 
 
 @auth_router.post('/sing_in')
 async def authorize_user(sing_in_user_schema: SingInUserSchema,
                          auth_repository: AuthRepository = Depends(get_auth_repository)):
-    await AuthService(auth_repository).verify_user(sing_in_user_schema)
+    user_tokens: UserTokenSchema = await AuthService(auth_repository).verify_user(sing_in_user_schema)
+    return user_tokens

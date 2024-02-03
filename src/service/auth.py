@@ -2,8 +2,10 @@ from sqlalchemy.exc import NoResultFound, IntegrityError
 from fastapi import HTTPException
 from src.repository.interfaces.auth import AuthRepositoryInterface
 from src.schemas.auth import InputUserSchema, OutputUserSchema, RegisterUserSchema, SingInUserSchema
+from src.schemas.token import UserTokenSchema
 from src.tools.database import Database_tools
 from src.tools.hasher import Hasher
+from src.tools.jwt_token import JWT_tools
 
 
 class AuthService:
@@ -99,8 +101,11 @@ class AuthService:
         try:
             if register_user_schema.password != register_user_schema.repeated_password:
                 raise ValueError
-            user_schema = await Database_tools.convert_register_schema(register_user_schema)
+            user_schema: InputUserSchema = await Database_tools.convert_register_schema(register_user_schema)
+            user_token_schema: UserTokenSchema = await JWT_tools.get_user_tokens(user_schema.copy())
+            user_schema.refresh_token = user_token_schema.refresh_token
             await self.auth_repository.set_obj(user_schema)
+            return user_token_schema
         except ValueError:
             raise HTTPException(
                 status_code=400,
@@ -125,9 +130,13 @@ class AuthService:
 
     async def verify_user(self, sing_in_user_schema: SingInUserSchema):
         try:
-            user_schema: OutputUserSchema = await self.auth_repository.get_user_by_username(sing_in_user_schema.username)
-            if not Hasher.verify_password(sing_in_user_schema.password, user_schema.password_hash):
+            user_output_schema: OutputUserSchema = await self.auth_repository.get_user_by_username(sing_in_user_schema.username)
+            if not Hasher.verify_password(sing_in_user_schema.password, user_output_schema.password_hash):
                 raise ValueError
+            user_schema: InputUserSchema = await Database_tools.convert_output_schema(user_output_schema)
+            user_token_schema: UserTokenSchema = await JWT_tools.get_user_tokens(user_schema.copy())
+            user_schema.refresh_token = user_token_schema.refresh_token
+            return user_token_schema
 
         except ValueError:
             raise HTTPException(

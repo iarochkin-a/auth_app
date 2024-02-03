@@ -6,6 +6,7 @@ class InputUserSchema(BaseSchema):
     password_hash: str
     email: str
     role_id: int = 1
+    refresh_token: str = None
 
 
 class OutputUserSchema(InputUserSchema):

@@ -2,14 +2,26 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 
-class Database_settings(BaseSettings):
+class MainSettings(BaseSettings):
+    model_config = SettingsConfigDict(extra='ignore', env_file=".env")
+
+
+
+class Database_settings(MainSettings):
     POSTGRES_DB: str
     POSTGRES_USER: str
     POSTGRES_HOST: str
     PGPORT: str
     POSTGRES_PASSWORD: str
 
-    model_config = SettingsConfigDict(env_file=".env")
+
+class JWT_settings(MainSettings):
+    ISS: str
+    SUB: str
+    ACCESS_TOKEN_EXP_TIME: int
+    REFRESH_TOKEN_EXP_TIME: int
+    SECRET_KEY: str
+    ALGORITHM: str
 
 
 class Database_utils:

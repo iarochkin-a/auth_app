@@ -11,6 +11,7 @@ class UserORM(Base):
     username: Mapped[str] = mapped_column(nullable=False, unique=True)
     password_hash: Mapped[str] = mapped_column(nullable=False)
     email: Mapped[str] = mapped_column(nullable=False, unique=True)
+    refresh_token: Mapped[str] = mapped_column(nullable=False)
     role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"))
     role: Mapped["RoleORM"] = relationship(back_populates="users", lazy='selectin')
 
