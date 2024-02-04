@@ -1,5 +1,7 @@
 from sqlalchemy.exc import NoResultFound, IntegrityError
 from fastapi import HTTPException
+from jwt.exceptions import InvalidTokenError, ExpiredSignatureError, InvalidIssuerError
+
 from src.repository.interfaces.auth import AuthRepositoryInterface
 from src.schemas.auth import InputUserSchema, OutputUserSchema, RegisterUserSchema, SingInUserSchema, PatchUserSchema
 from src.schemas.token import UserTokenSchema
@@ -87,7 +89,6 @@ class AuthService:
         try:
             main_user_schema = await self.get_user(user_id)
             new_user_schema: InputUserSchema = await Database_tools.convert_patch_user_schema(patch_user_schema, main_user_schema)
-            print(new_user_schema.__dict__)
             await self.auth_repository.update_obj(user_id, new_user_schema)
         except NoResultFound:
             raise HTTPException(
@@ -104,6 +105,11 @@ class AuthService:
             raise HTTPException(
                 status_code=400,
                 detail=f'{ex.detail}'
+            )
+        except Exception:
+            raise HTTPException(
+                status_code=500,
+                detail=f'Database error'
             )
 
     async def delete_user(self, user_id: int):
@@ -176,3 +182,24 @@ class AuthService:
                 status_code=500,
                 detail=f'Database error'
             )
+
+    @staticmethod
+    async def verify_tokens(users_token: UserTokenSchema):
+        try:
+            await JWT_tools().decoded_token(users_token)
+        except ExpiredSignatureError:
+            raise HTTPException(
+                status_code=402,
+                detail=f'Invalid expired time.'
+            )
+        except InvalidIssuerError:
+            raise HTTPException(
+                status_code=402,
+                detail=f'Invalid issuer.'
+            )
+        except InvalidTokenError:
+            raise HTTPException(
+                status_code=402,
+                detail=f'Invalid token.'
+            )
+        

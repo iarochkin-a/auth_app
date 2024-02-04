@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 import jwt
-
+from jwt.exceptions import ExpiredSignatureError, InvalidIssuerError
 from src.config import JWT_settings
 from src.schemas.auth import InputUserSchema
 from src.schemas.token import AccessTokenSchema, RefreshTokenSchema, UserTokenSchema
@@ -24,6 +24,11 @@ class JWT_tools:
         }
         access_token = jwt.encode(decoded_dict, JWT_settings().SECRET_KEY, JWT_settings().ALGORITHM)
         return AccessTokenSchema(**{'access_token': access_token})
+
+    @staticmethod
+    async def decoded_token(user_token: UserTokenSchema):
+        jwt.decode(user_token.access_token, JWT_settings().SECRET_KEY, JWT_settings().ALGORITHM)
+        jwt.decode(user_token.refresh_token, JWT_settings().SECRET_KEY, JWT_settings().ALGORITHM)
 
     @staticmethod
     async def get_refresh_token(user_schema: InputUserSchema) -> RefreshTokenSchema:
@@ -51,6 +56,3 @@ class JWT_tools:
             'refresh_token': refresh_token.refresh_token
         })
 
-    @classmethod
-    async def verify_token(cls, user_tokens: UserTokenSchema):
-        pass

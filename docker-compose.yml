@@ -7,24 +7,26 @@ services:
       dockerfile: ./Dockerfile
     env_file:
       - .env
-    container_name: "auth_app"
+    container_name: auth_app
     ports:
       - "5005:5050"
     depends_on:
       - auth_db
     networks:
-      - racks.network
+      - mynetwork
 
   auth_db:
-    container_name: "auth_db_container"
+    container_name: auth_db_container
     image: postgres:latest
     env_file:
       - .env
     restart: always
     networks:
-      - racks.network
+      - mynetwork
 
 
 networks:
-  racks.network:
-    driver: bridge
+  mynetwork:
+    external: true
+    name: myglobalnetwork
+      
